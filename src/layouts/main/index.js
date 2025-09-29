@@ -1,15 +1,9 @@
 import { Container, Stack } from "@mui/material";
 import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
-import Logo from '../../assets/Images/logo.ico'
+import { Outlet } from "react-router-dom";
+import Logo from '../../assets/Images/logo.ico';
 
-const isAuthenticated = true;
-
-const MainLayout = () => {
-
-  if(isAuthenticated){
-    return <Navigate to='/app'/>;
-  }
+const MainLayout = ({ children }) => {
 
   return (
     <>
@@ -18,8 +12,8 @@ const MainLayout = () => {
         <Stack sx={{width:'100%'}} direction='column' alignItems={'center'}>
           <img style={{height:120, width:120}} src={Logo} alt="Logo"/>
         </Stack>
+        {children || <Outlet />}
       </Stack>
-      <Outlet />
     </Container>
     
     </>

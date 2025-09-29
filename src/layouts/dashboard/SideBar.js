@@ -8,6 +8,7 @@ import { faker } from '@faker-js/faker';
 import AntSwitch from '../../components/AntSwitch';
 import Logo from '../../assets/Images/logo.ico';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const getPath = (index) =>{
   switch (index) {
@@ -37,8 +38,7 @@ const getMenuPath = (index) =>{
       return '/settings'
       
     case 2:
-      // todo - update token and set isAuth = false
-      return '/auth/login'
+      return 'logout' // Special case for logout
       
     default:
       break;
@@ -49,12 +49,29 @@ const SideBar = () => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
+  const { logout, currentUser } = useAuth();
+  
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
-    navigate();
   };
+  
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleMenuClick = async (idx) => {
+    const path = getMenuPath(idx);
+    if (path === 'logout') {
+      try {
+        await logout();
+        navigate('/auth/login');
+      } catch (error) {
+        console.error('Failed to log out', error);
+      }
+    } else {
+      navigate(path);
+    }
+    handleClose();
   };
 
     const theme = useTheme();
@@ -133,10 +150,8 @@ const SideBar = () => {
             >
             <Stack spacing={1} px={1}>
               {Profile_Menu.map((el, idx)=>(
-                  <MenuItem onClick={ ()=> {handleClick(); } }>
-                    <Stack onClick={()=>{
-                      navigate(getMenuPath(idx))
-                    }} sx={{width:100}} direction='row' alignItems={'center'}
+                  <MenuItem key={idx} onClick={() => handleMenuClick(idx)}>
+                    <Stack sx={{width:100}} direction='row' alignItems={'center'}
                      justifyContent='space-between'>
                       <span>{el.title}</span>
                       {el.icon}

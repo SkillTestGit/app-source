@@ -6,24 +6,28 @@ import FormProvider from '../../components/hook-form/FormProvider';
 import { Alert, Button, IconButton, InputAdornment, Stack } from '@mui/material';
 import { RHFTextField } from '../../components/hook-form';
 import { Eye, EyeSlash } from 'phosphor-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const RegisterForm = () => {
 
     const [showPassword, setShowPassword] = useState(false);
+    const { signup } = useAuth();
+    const navigate = useNavigate();
 
     //validation rules 
     const registerSchema = Yup.object().shape({
       firstName:Yup.string().required('First Name is required'),
       lastName:Yup.string().required('Last Name is required'),
       email:Yup.string().required('Email is required').email('Email must be a valid email address'),
-      password:Yup.string().required('Password is required')
+      password:Yup.string().required('Password is required').min(6, 'Password must be at least 6 characters')
     });
   
     const defaultValues = {
       firstName:'',
       lastName:'',
-      email:'dulanjali@gmail.com',
-      password:'dula@123'
+      email:'',
+      password:''
     };
   
     const methods = useForm({
@@ -36,13 +40,14 @@ const RegisterForm = () => {
   
      const onSubmit = async (data) =>{
           try {
-              //submit data to backend
+              await signup(data.email, data.password, data.firstName, data.lastName);
+              navigate('/welcome'); // Redirect to welcome page after successful signup
           } catch (error) {
               console.log(error);
               reset();
               setError('afterSubmit',{
                   ...error,
-                  message: error.message
+                  message: error.message || 'Registration failed. Please try again.'
               })
           }
      }
