@@ -6,11 +6,14 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Alert, Button, IconButton, InputAdornment, Link, Stack } from '@mui/material';
 import { RHFTextField } from '../../components/hook-form';
 import { Eye, EyeSlash } from 'phosphor-react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const LoginForm = () => {
 
   const [showPassword, setShowPassword] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   //validation rules 
   const loginSchema = Yup.object().shape({
@@ -19,8 +22,8 @@ const LoginForm = () => {
   });
 
   const defaultValues = {
-    email:'dulanjali@gmail.com',
-    password:'dula@123'
+    email:'',
+    password:''
   };
 
   const methods = useForm({
@@ -33,13 +36,14 @@ const LoginForm = () => {
 
    const onSubmit = async (data) =>{
         try {
-            //submit data to backend
+            await login(data.email, data.password);
+            navigate('/welcome'); // Redirect to welcome page after successful login
         } catch (error) {
             console.log(error);
             reset();
             setError('afterSubmit',{
                 ...error,
-                message: error.message
+                message: error.message || 'Login failed. Please check your credentials.'
             })
         }
    }
