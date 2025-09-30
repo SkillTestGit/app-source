@@ -13,8 +13,9 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 const LoginForm = () => {
 
     const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+
   //validation rules
   const loginSchema = Yup.object().shape({
     email:Yup.string().required('Email is required').email('Email must be a valid email address'),
@@ -44,9 +45,7 @@ const LoginForm = () => {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            console.log('Logged in user:', user);
-
-            // Redirect to protected page
+            // Redirect to the welcome page
             navigate('/welcome', { replace: true });
         } catch (error) {
             console.error(error);

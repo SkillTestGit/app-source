@@ -61,9 +61,6 @@ const RegisterForm = () => {
                 signupTime: serverTimestamp(),
             });
 
-             alert("Signup successful!");
-            //navigate("/app");
-            // reset(); // reset form fields
         } catch (error) {
             console.error(error);
             setError('afterSubmit', {

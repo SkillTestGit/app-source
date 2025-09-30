@@ -6,7 +6,6 @@ export const PrivateRoute = ({ children }) => {
 
     if (checking) return <div>Loading...</div>; // wait for Firebase
 
-    console.log("PrivateRoute", { user, checking });
     if (!user) {
         // user is null after checking = false
         return <Navigate to="/auth/login" replace />;
