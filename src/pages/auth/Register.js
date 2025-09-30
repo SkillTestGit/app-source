@@ -1,10 +1,11 @@
 import { Link, Stack, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import React from 'react'
+import React, { useState } from "react";
 import RegisterForm from '../../sections/auth/RegisterForm';
 import AuthSocial from '../../sections/auth/AuthSocial';
 
 const Register = () => {
+
   return (
     <Stack spacing={2} sx={{mb:5, position:'relative'}}>
         <Typography variant='h4'>
