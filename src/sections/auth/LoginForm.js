@@ -6,13 +6,17 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Alert, Button, IconButton, InputAdornment, Link, Stack } from '@mui/material';
 import { RHFTextField } from '../../components/hook-form';
 import { Eye, EyeSlash } from 'phosphor-react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink , useNavigate} from 'react-router-dom';
+import { auth } from '../../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const LoginForm = () => {
 
-  const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-  //validation rules 
+  //validation rules
   const loginSchema = Yup.object().shape({
     email:Yup.string().required('Email is required').email('Email must be a valid email address'),
     password:Yup.string().required('Password is required')
@@ -31,24 +35,35 @@ const LoginForm = () => {
   const {reset, setError, handleSubmit, formState:{errors, isSubmitting, isSubmitSuccessful}}
    = methods;
 
-   const onSubmit = async (data) =>{
-        try {
-            //submit data to backend
-        } catch (error) {
-            console.log(error);
-            reset();
-            setError('afterSubmit',{
-                ...error,
-                message: error.message
-            })
-        }
-   }
+    const onSubmit = async (data) => {
+        const { email, password } = data; // get data from form
+        setError('afterSubmit', {}); // clear previous errors
+        setLoading(true);
 
-  return (
+        try {
+            // Sign in with Firebase Auth
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Redirect to the welcome page
+            navigate('/welcome', { replace: true });
+        } catch (error) {
+            console.error(error);
+            setError('afterSubmit', {
+                type: 'manual',
+                message: error.message, // show Firebase error
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={3}>
             {!!errors.afterSubmit && <Alert severity='error'>{errors.afterSubmit.message}</Alert>}
-        
+
         <RHFTextField name='email' label='Email address'/>
         <RHFTextField name='password' label='Password' type={showPassword ? 'text' : 'password'}
         InputProps={{endAdornment:(
@@ -71,7 +86,9 @@ const LoginForm = () => {
          '&:hover':{
             bgcolor:'text.primary',
             color:(theme)=> theme.palette.mode === 'light' ? 'common.white':'grey.800',
-         }}}>Login</Button>
+         }}}
+                disabled={loading}
+         >Login</Button>
     </FormProvider>
   )
 }

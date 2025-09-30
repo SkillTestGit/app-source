@@ -6,46 +6,71 @@ import FormProvider from '../../components/hook-form/FormProvider';
 import { Alert, Button, IconButton, InputAdornment, Stack } from '@mui/material';
 import { RHFTextField } from '../../components/hook-form';
 import { Eye, EyeSlash } from 'phosphor-react';
+import { auth, db } from "../../firebase";
+import {createUserWithEmailAndPassword} from "firebase/auth";
+import {doc, serverTimestamp, setDoc} from "firebase/firestore";
+import { useNavigate } from 'react-router-dom';
 
 const RegisterForm = () => {
+    const navigate = useNavigate(); // ✅ must be inside the component
 
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setErrorMsg] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    //validation rules 
+    //validation rules
     const registerSchema = Yup.object().shape({
       firstName:Yup.string().required('First Name is required'),
       lastName:Yup.string().required('Last Name is required'),
       email:Yup.string().required('Email is required').email('Email must be a valid email address'),
       password:Yup.string().required('Password is required')
     });
-  
+
     const defaultValues = {
       firstName:'',
       lastName:'',
       email:'dulanjali@gmail.com',
       password:'dula@123'
     };
-  
+
     const methods = useForm({
       resolver: yupResolver(registerSchema),
       defaultValues
     });
-  
+
     const {reset, setError, handleSubmit, formState:{errors, isSubmitting, isSubmitSuccessful}}
      = methods;
-  
-     const onSubmit = async (data) =>{
-          try {
-              //submit data to backend
-          } catch (error) {
-              console.log(error);
-              reset();
-              setError('afterSubmit',{
-                  ...error,
-                  message: error.message
-              })
-          }
-     }
+
+    const onSubmit = async (data) => {
+        setErrorMsg(""); // clear previous errors
+        setLoading(true);
+
+        try {
+            const { email, password, firstName, lastName } = data;
+
+            // Create user in Firebase Auth
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Store user profile in Firestore (without password)
+            await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                email: user.email,
+                firstName,
+                lastName,
+                signupTime: serverTimestamp(),
+            });
+
+        } catch (error) {
+            console.error(error);
+            setError('afterSubmit', {
+                type: 'manual',
+                message: error.message,
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
@@ -74,7 +99,7 @@ const RegisterForm = () => {
             color:(theme)=> theme.palette.mode === 'light' ? 'common.white':'grey.800',
          }}}>Create Account</Button>
         </Stack>
-        
+
     </FormProvider>
   )
 }

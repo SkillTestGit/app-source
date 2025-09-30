@@ -9,6 +9,7 @@ import reportWebVitals from "./reportWebVitals";
 import SettingsProvider from "./contexts/SettingsContext";
 import { store } from "./redux/store";
 import { Provider as ReduxProvider} from "react-redux";
+import {AuthProvider} from "./contexts/AuthContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -17,7 +18,7 @@ root.render(
     <HelmetProvider>
       <ReduxProvider store={store}>
       <SettingsProvider>
-        <BrowserRouter>
+          <BrowserRouter>
           <App />
         </BrowserRouter>
       </SettingsProvider>
